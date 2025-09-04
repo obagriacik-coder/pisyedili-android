@@ -3,10 +3,19 @@ package com.pisyedili.game
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,15 +37,15 @@ class MainActivity : ComponentActivity() {
 fun MenuScreen() {
     // Durumlar
     var language by remember { mutableStateOf("TR") }           // TR / EN
-    var tableColor by remember { mutableStateOf("GREEN") }       // GREEN / BLUE / BLACK
-    var deck by remember { mutableStateOf("GIRLS") }             // GIRLS / CLASSIC / BIKINI
+    var tableColor by remember { mutableStateOf("GREEN") }      // GREEN / BLUE / BLACK
+    var deck by remember { mutableStateOf("GIRLS") }            // GIRLS / CLASSIC / BIKINI
     var p1 by remember { mutableStateOf(TextFieldValue("Oyuncu 1")) }
     var p2 by remember { mutableStateOf(TextFieldValue("Oyuncu 2")) }
     var p3 by remember { mutableStateOf(TextFieldValue("Oyuncu 3")) }
     var p4 by remember { mutableStateOf(TextFieldValue("Oyuncu 4")) }
 
     Scaffold(
-        topBar = { SmallTopAppBar(title = { Text("Pis Yedili — Menü") }) }
+        topBar = { TopAppBar(title = { Text("Pis Yedili — Menü") }) }
     ) { inner ->
         Column(
             Modifier
@@ -48,26 +57,27 @@ fun MenuScreen() {
         ) {
             // Dil seçimi
             SectionTitle("Dil / Language")
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChoiceChip(selected = language == "TR", onClick = { language = "TR" }, label = "TR")
-                ChoiceChip(selected = language == "EN", onClick = { language = "EN" }, label = "EN")
-            }
+            RadioRow(
+                options = listOf("TR", "EN"),
+                selected = language,
+                labels = mapOf("TR" to "TR", "EN" to "EN"),
+            ) { language = it }
 
             // Masa rengi
             SectionTitle("Masa Rengi")
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChoiceChip(selected = tableColor == "GREEN", onClick = { tableColor = "GREEN" }, label = "Koyu Yeşil")
-                ChoiceChip(selected = tableColor == "BLUE", onClick = { tableColor = "BLUE" }, label = "Koyu Mavi")
-                ChoiceChip(selected = tableColor == "BLACK", onClick = { tableColor = "BLACK" }, label = "Siyah")
-            }
+            RadioRow(
+                options = listOf("GREEN", "BLUE", "BLACK"),
+                selected = tableColor,
+                labels = mapOf("GREEN" to "Koyu Yeşil", "BLUE" to "Koyu Mavi", "BLACK" to "Siyah")
+            ) { tableColor = it }
 
             // Deste seçimi
             SectionTitle("Deste")
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChoiceChip(selected = deck == "GIRLS", onClick = { deck = "GIRLS" }, label = "Güzel Kızlar")
-                ChoiceChip(selected = deck == "CLASSIC", onClick = { deck = "CLASSIC" }, label = "Klasik")
-                ChoiceChip(selected = deck == "BIKINI", onClick = { deck = "BIKINI" }, label = "Bikini/Mayolu")
-            }
+            RadioRow(
+                options = listOf("GIRLS", "CLASSIC", "BIKINI"),
+                selected = deck,
+                labels = mapOf("GIRLS" to "Güzel Kızlar", "CLASSIC" to "Klasik", "BIKINI" to "Bikini/Mayolu")
+            ) { deck = it }
 
             // Oyuncu isimleri
             SectionTitle("Oyuncu İsimleri")
@@ -89,8 +99,7 @@ fun MenuScreen() {
             Button(
                 enabled = allNamesOk,
                 onClick = {
-                    // Şimdilik sadece seçimleri SnackBar/Toast gibi göstermek yerine logik olarak placeholder.
-                    // Sonraki adımda oyun ekranına navigasyon ekleyeceğiz.
+                    // TODO: Sonraki adımda oyun ekranına geçiş (Navigation) eklenecek.
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {
@@ -112,8 +121,29 @@ private fun SectionTitle(text: String) {
     Text(text, style = MaterialTheme.typography.titleMedium)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ChoiceChip(selected: Boolean, onClick: () -> Unit, label: String) {
-    FilterChip(selected = selected, onClick = onClick, label = { Text(label) })
+private fun RadioRow(
+    options: List<String>,
+    selected: String,
+    labels: Map<String, String>,
+    onSelected: (String) -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        options.forEach { option ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { onSelected(option) }
+            ) {
+                RadioButton(
+                    selected = (option == selected),
+                    onClick = { onSelected(option) }
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(labels[option] ?: option)
+            }
+        }
+    }
 }
