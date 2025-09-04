@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Material şablonundan kalan eksik renkler -->
+    <!-- Launcher ikonu arka plan rengi (HATA BUNUN YÜZÜNDENDI) -->
+    <color name="ic_launcher_background">#3DDC84</color>
+
+    <!-- Material şablonundan beklenen renkler -->
     <color name="purple_500">#6200EE</color>
     <color name="purple_700">#3700B3</color>
     <color name="teal_200">#03DAC5</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Tema için eklediğimiz renkler -->
+    <!-- Uygulama renkleri (istersen kullan) -->
     <color name="colorPrimary">#FF6200EE</color>
     <color name="colorPrimaryDark">#FF3700B3</color>
     <color name="colorAccent">#FF03DAC5</color>
-
-    <!-- Arka planlar için örnek renkler -->
     <color name="black">#000000</color>
-    <color name="dark_green">#004D40</color>
-    <color name="dark_blue">#0D47A1</color>
 </resources>
