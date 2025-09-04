@@ -22,7 +22,6 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # Gradle 8.7 kullan
       - name: Setup Gradle 8.7
         uses: gradle/gradle-build-action@v2
         with:
