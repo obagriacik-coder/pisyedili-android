@@ -1,6 +1,13 @@
-<resources>
-    <style name="Theme.PisYedili" parent="Theme.Material3.Dark.NoActionBar">
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Light Theme -->
+    <style name="Theme.PisYedili" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorSurface">@color/black</item>
+        <item name="colorPrimaryDark">@color/purple_700</item>
+        <item name="colorAccent">@color/teal_200</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryDark</item>
+        <item name="android:navigationBarColor">?attr/colorPrimary</item>
+        <item name="android:windowBackground">@color/white</item>
     </style>
+
 </resources>
