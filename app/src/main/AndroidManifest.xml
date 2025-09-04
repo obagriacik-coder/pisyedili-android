@@ -1,8 +1,14 @@
-<manifest package="com.pisyedili.game" xmlns:android="http://schemas.android.com/apk/res/android">
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.pisyedili.game">
+
     <application
-        android:label="PisYedili"
+        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+        android:label="PisYedili"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.PisYedili">
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -12,4 +18,5 @@
             </intent-filter>
         </activity>
     </application>
+
 </manifest>
