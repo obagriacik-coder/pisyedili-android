@@ -26,18 +26,36 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Unzip Android project
+      - name: Unzip and locate project
+        id: locate
         run: |
           sudo apt-get update && sudo apt-get install -y unzip
-          unzip -o PisYedili_Android_Menu.zip
+          # 1) ZIP dosyasını otomatik bul
+          ZIP=$(ls *.zip | head -n 1)
+          if [ -z "$ZIP" ]; then
+            echo "No ZIP found in repo root"; exit 1
+          fi
+          echo "ZIP=$ZIP"
+          echo "zip_name=$ZIP" >> $GITHUB_OUTPUT
+
+          # 2) Aç
+          unzip -o "$ZIP"
+
+          # 3) Gradle projesi dizinini bul (settings.gradle.kts olan klasör)
+          DIR=$(find . -maxdepth 2 -name "settings.gradle.kts" -printf "%h" -quit)
+          if [ -z "$DIR" ]; then
+            echo "No Gradle project directory found"; exit 1
+          fi
+          echo "DIR=$DIR"
+          echo "project_dir=$DIR" >> $GITHUB_OUTPUT
 
       - name: Build debug APK
-        working-directory: PisYedili_Android_Menu
         run: |
           gradle :app:assembleDebug
+        working-directory: ${{ steps.locate.outputs.project_dir }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: pisyedili-debug-apk
-          path: PisYedili_Android_Menu/app/build/outputs/apk/debug/*.apk
+          path: ${{ steps.locate.outputs.project_dir }}/app/build/outputs/apk/debug/*.apk
