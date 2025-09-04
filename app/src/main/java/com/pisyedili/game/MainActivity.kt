@@ -3,44 +3,42 @@ package com.pisyedili.game
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ColorLens
+import androidx.compose.material.icons.rounded.Flag
+import androidx.compose.material.icons.rounded.People
+import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-@OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Basit koyu tema
-            MaterialTheme(colorScheme = darkColorScheme()) {
+            val cs = darkColorScheme() // gerekirse colors.xml ile eşlersin
+            MaterialTheme(colorScheme = cs) {
                 Scaffold(
-                    topBar = {
-                        CenterAlignedTopAppBar(
-                            title = {
-                                Text(
-                                    "Pis Yedili — Menü",
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        )
-                    }
+                    topBar = { FancyTopBar() }
                 ) { inner ->
                     MenuScreen(
                         modifier = Modifier
-                            .fillMaxSize()
                             .padding(inner)
-                            .padding(horizontal = 16.dp)
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp)
                     )
                 }
             }
@@ -49,176 +47,170 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun SectionTitle(text: String) {
-    Text(text, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 8.dp))
-}
-
-@Composable
-private fun SubtleLabel(text: String) {
-    Text(
-        text,
-        style = MaterialTheme.typography.labelLarge.copy(fontSize = 15.sp),
-        color = MaterialTheme.colorScheme.onSurfaceVariant
+private fun FancyTopBar() {
+    // Mor tonlarda gradient başlık
+    val grad = Brush.horizontalGradient(
+        listOf(Color(0xFF7C4DFF), Color(0xFF5E35B1))
     )
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .background(grad)
+            .padding(horizontal = 20.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Text(
+            "Pis Yedili — Menü",
+            color = Color.White,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
 }
 
+/* ----------------------- Reusable UI ----------------------- */
+
 @Composable
-private fun OptionRadio(
-    selected: Boolean,
-    onSelect: () -> Unit,
-    label: String,
-    modifier: Modifier = Modifier
+private fun SectionCard(
+    icon: @Composable () -> Unit,
+    title: String,
+    content: @Composable ColumnScope.() -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .padding(end = 20.dp)
-            .height(IntrinsicSize.Min)
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(20.dp)
     ) {
-        RadioButton(selected = selected, onClick = onSelect)
-        Spacer(Modifier.width(8.dp))
-        Text(label, style = MaterialTheme.typography.titleMedium)
+        Column(Modifier.padding(18.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                icon()
+                Spacer(Modifier.width(10.dp))
+                Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+            }
+            Spacer(Modifier.height(12.dp))
+            content()
+        }
     }
 }
 
 @Composable
-private fun PlayerTextField(
+private fun SingleChoiceChips(
+    options: List<String>,
+    selected: String,
+    onSelected: (String) -> Unit
+) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        options.forEach { opt ->
+            FilterChip(
+                selected = selected == opt,
+                onClick = { onSelected(opt) },
+                label = { Text(opt) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun PlayerField(
     label: String,
     value: String,
-    onChange: (String) -> Unit,
+    onValue: (String) -> Unit
 ) {
     OutlinedTextField(
         value = value,
-        onValueChange = onChange,
+        onValueChange = onValue,
         label = { Text(label) },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
         modifier = Modifier.fillMaxWidth()
     )
 }
 
+/* ----------------------- Screen ----------------------- */
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MenuScreen(modifier: Modifier = Modifier) {
-    // durumlar
     var lang by remember { mutableStateOf("TR") }
-    var table by remember { mutableStateOf("GREEN") }
-    var deck by remember { mutableStateOf("GIRLS") }
+    var table by remember { mutableStateOf("Koyu Yeşil") }
+    var deck by remember { mutableStateOf("Güzel Kızlar") }
 
     var p1 by remember { mutableStateOf("Oyuncu 1") }
     var p2 by remember { mutableStateOf("Oyuncu 2") }
     var p3 by remember { mutableStateOf("Oyuncu 3") }
     var p4 by remember { mutableStateOf("Oyuncu 4") }
 
-    val allNamesOk = listOf(p1, p2, p3, p4).all { it.trim().isNotEmpty() }
+    Column(modifier) {
 
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(top = 8.dp, bottom = 20.dp)
-    ) {
-        // Dil
-        SectionCard {
-            SectionTitle("Dil / Language")
-            Row {
-                OptionRadio(selected = lang == "TR", onSelect = { lang = "TR" }, label = "TR")
-                OptionRadio(selected = lang == "EN", onSelect = { lang = "EN" }, label = "EN")
+        SectionCard(icon = { Icon(Icons.Rounded.Flag, null) }, title = "Dil / Language") {
+            SingleChoiceChips(options = listOf("TR", "EN"), selected = lang, onSelected = { lang = it })
+        }
+
+        SectionCard(icon = { Icon(Icons.Rounded.ColorLens, null) }, title = "Masa Rengi") {
+            SingleChoiceChips(
+                options = listOf("Koyu Yeşil", "Koyu Mavi"),
+                selected = table,
+                onSelected = { table = it }
+            )
+        }
+
+        SectionCard(icon = { Icon(Icons.Rounded.Style, null) }, title = "Deste") {
+            SingleChoiceChips(
+                options = listOf("Güzel Kızlar", "Klasik"),
+                selected = deck,
+                onSelected = { deck = it }
+            )
+        }
+
+        SectionCard(icon = { Icon(Icons.Rounded.People, null) }, title = "Oyuncu İsimleri") {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                PlayerField("İsim 1", p1) { p1 = it }
+                PlayerField("İsim 2", p2) { p2 = it }
+                PlayerField("İsim 3", p3) { p3 = it }
+                PlayerField("İsim 4", p4) { p4 = it }
             }
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
 
-        // Masa rengi
-        SectionCard {
-            SectionTitle(if (lang == "TR") "Masa Rengi" else "Table Color")
-            Row(Modifier.fillMaxWidth()) {
-                OptionRadio(
-                    selected = table == "GREEN",
-                    onSelect = { table = "GREEN" },
-                    label = if (lang == "TR") "Koyu Yeşil" else "Dark Green",
-                    modifier = Modifier.weight(1f)
-                )
-                OptionRadio(
-                    selected = table == "BLUE",
-                    onSelect = { table = "BLUE" },
-                    label = if (lang == "TR") "Koyu Mavi" else "Dark Blue",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
+        val enabled = listOf(p1, p2, p3, p4).all { it.isNotBlank() }
 
-        Spacer(Modifier.height(12.dp))
-
-        // Deste
-        SectionCard {
-            SectionTitle(if (lang == "TR") "Deste" else "Deck")
-            Row(Modifier.fillMaxWidth()) {
-                OptionRadio(
-                    selected = deck == "GIRLS",
-                    onSelect = { deck = "GIRLS" },
-                    label = if (lang == "TR") "Güzel Kızlar" else "Pretty Girls",
-                    modifier = Modifier.weight(1f)
-                )
-                OptionRadio(
-                    selected = deck == "CLASSIC",
-                    onSelect = { deck = "CLASSIC" },
-                    label = if (lang == "TR") "Klasik" else "Classic",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        // Oyuncu isimleri
-        SectionCard {
-            SectionTitle(if (lang == "TR") "Oyuncu İsimleri" else "Player Names")
-            Spacer(Modifier.height(6.dp))
-            SubtleLabel(if (lang == "TR") "İsim 1" else "Name 1")
-            PlayerTextField(value = p1, onChange = { p1 = it }, label = "")
-            Spacer(Modifier.height(10.dp))
-            SubtleLabel(if (lang == "TR") "İsim 2" else "Name 2")
-            PlayerTextField(value = p2, onChange = { p2 = it }, label = "")
-            Spacer(Modifier.height(10.dp))
-            SubtleLabel(if (lang == "TR") "İsim 3" else "Name 3")
-            PlayerTextField(value = p3, onChange = { p3 = it }, label = "")
-            Spacer(Modifier.height(10.dp))
-            SubtleLabel(if (lang == "TR") "İsim 4" else "Name 4")
-            PlayerTextField(value = p4, onChange = { p4 = it }, label = "")
-        }
-
-        Spacer(Modifier.height(18.dp))
-
-        // Başlat butonu
-        Button(
-            enabled = allNamesOk,
-            onClick = { /* burada oyun ekranına geçeceksin (navigation ekleyince) */ },
-            modifier = Modifier
+        // Alt “özet + başlat” alanı
+        Column(
+            Modifier
                 .fillMaxWidth()
-                .height(56.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
+                .padding(16.dp)
         ) {
-            Text(if (lang == "TR") "Oyunu Başlat" else "Start Game")
+            Text(
+                "Seçimler",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                "Dil: $lang • Masa: $table • Deste: $deck\n" +
+                        "Oyuncular: $p1, $p2, $p3, $p4",
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = { /* TODO: oyun ekranına geç */ },
+                enabled = enabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text("Oyunu Başlat", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            }
         }
 
-        Spacer(Modifier.height(10.dp))
-
-        // Özet
-        Text(
-            text = "Seçimler → Dil=$lang, Masa=$table, Deste=$deck, Oyuncular=$p1, $p2, $p3, $p4",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 4.dp)
-        )
-    }
-}
-
-@Composable
-private fun SectionCard(content: @Composable ColumnScope.() -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f)
-        )
-    ) {
-        Column(Modifier.padding(16.dp), content = content)
+        Spacer(Modifier.height(12.dp))
     }
 }
